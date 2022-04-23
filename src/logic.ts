@@ -1,4 +1,4 @@
-import { InfoResponse, GameState, MoveResponse, Game, Coord } from "./types";
+import { InfoResponse, GameState, MoveResponse, Game, Coord as ICoord } from "./types";
 
 export function info(): InfoResponse {
   console.log("INFO");
@@ -37,7 +37,7 @@ function allMoves(): PossibleMoves {
 /**
  * Checks where `a` will hit `b` for all cardinals.
  */
-function preventHit(a: Coord, b: Coord): PossibleMoves {
+function preventHit(a: ICoord, b: ICoord): PossibleMoves {
   const preventHit: PossibleMoves = allMoves();
   if (a.x == b.x) {
     if (a.y + 1 == b.y) {
@@ -126,6 +126,91 @@ function preventHitEnemy(
   return possibleMoves;
 }
 
+function neighborCoords(coord: Coord): Coord[] {
+  return [
+    { x: coord.x - 1, y: coord.y },
+    { x: coord.x + 1, y: coord.y },
+    { x: coord.x, y: coord.y - 1 },
+    { x: coord.x, y: coord.y + 1 },
+  ].map(Coord.from);
+}
+
+class StringMap<T extends object, K> extends Map<T, K> {
+  private map: { [key: string]: K } = {};
+  set(key: T, value: K): this {
+    this.map[JSON.stringify(key)] = value;
+    return this
+  }
+  get(key: T): K | undefined {
+    return this.map[JSON.stringify(key)];
+  }
+  has(key: T): boolean {
+    return this.map[JSON.stringify(key)] !== undefined;
+  }
+}
+class StringSet<T extends object> {
+  private _set: Set<string> = new Set();
+  add(key: T): void {
+    this._set.add(JSON.stringify(key));
+  }
+  has(key: T): boolean {
+    return this._set.has(JSON.stringify(key));
+  }
+}
+
+class Coord implements ICoord {
+  constructor(public x: number, public y: number) { }
+  static from(coord: ICoord): Coord {
+    return new Coord(coord.x, coord.y);
+  }
+  existsIn(coords: ICoord[]): boolean {
+    return coords.some((c) => c.x == this.x && c.y == this.y);
+  }
+  toString(): string {
+    return `(${this.x}, ${this.y})`;
+  }
+}
+
+/**
+ *  Returns a list of all possible moves that can be made from the current game state.
+ *  Considers the following rules:
+ * - You can't move into a wall.
+ * - You can't move into your own body.
+ * - You can't move into an enemy's body.
+ * @param state 
+ * @returns Coord[][]
+ */
+function bfsPaths(state: GameState): Coord[][] {
+  const start = state.you.head;
+  const foods = state.board.food;
+  const queue: Coord[] = [Coord.from(start)];
+  const visited: StringSet<ICoord> = new StringSet();
+  const paths: StringMap<ICoord, ICoord[]> = new StringMap();
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    visited.add(current);
+    const neighbors = neighborCoords(current);
+    neighbors.forEach((neighbor) => {
+      if (
+        neighbor.x >= 0 &&
+        neighbor.x < state.board.width &&
+        neighbor.y >= 0 &&
+        neighbor.y < state.board.height &&
+        !visited.has(neighbor) && // Not visited
+        !paths.has(neighbor) && // Not in a path
+        !neighbor.existsIn(state.you.body) && // Not in your body
+        !state.board.snakes.some((s) => neighbor.existsIn(s.body)) // Not in an enemy's body
+      ) {
+        queue.push(neighbor);
+        paths.set(neighbor, [...(paths.get(current) || []), neighbor]);
+      }
+    });
+  }
+  const foodPaths = foods.map(paths.get.bind(paths)).filter((p: ICoord[] | undefined) => p !== undefined);
+  return foodPaths as Coord[][];
+}
+
 export function move(gameState: GameState): MoveResponse {
   const possibleMoves = allMoves();
 
@@ -141,42 +226,42 @@ export function move(gameState: GameState): MoveResponse {
   // Step 4 - Find food.
   // Use information in gameState to seek out and find food.
   const head = gameState.you.head;
-  const dist = (c: Coord) => Math.abs(head.x - c.x) + Math.abs(head.y - c.y);
+  const dist = (c: ICoord) => Math.abs(head.x - c.x) + Math.abs(head.y - c.y);
   const foods = gameState.board.food.sort((a, b) => dist(a) - dist(b));
-  const preference: Direction[] = [];
-  if (foods.length > 0) {
-    const [nearestFood] = foods;
-    const offsetX = head.x - nearestFood.x;
-    const offsetY = head.y - nearestFood.y;
-    if (offsetX < 0) {
-      // Head is left of food
-      preference.push("right");
-    } else if (offsetX > 0) {
-      preference.push("left");
-    }
-    if (offsetY < 0) {
-      // Head is below food
-      preference.push("up");
-    } else if (offsetY > 0) {
-      preference.push("down");
+  let preference: (Direction | null) = null;
+  const foodPaths = bfsPaths(gameState);
+  if (foodPaths.length > 0) {
+    const foodPath = foodPaths.sort((a, b) => a.length - b.length)[0];
+    if(foodPath.length > 0) {
+      const [nextMove] = foodPath
+      preference = getNextMove(head, nextMove);
     }
   }
 
-  // Finally, choose a move from the available safe moves.
-  // Step 5 - Select a move to make based on strategy, rather than random.
-  const safeMoves = DIRECTIONS.filter((key) => possibleMoves[key as Direction]);
-
-  let move = safeMoves[Math.floor(Math.random() * safeMoves.length)];
-  for (const p of preference) {
-    if (possibleMoves[p]) {
-      move = p;
-      break;
+    // Finally, choose a move from the available safe moves.
+    const safeMoves = DIRECTIONS.filter((key) => possibleMoves[key as Direction]);
+    let move = safeMoves[Math.floor(Math.random() * safeMoves.length)];
+    const response: MoveResponse = {
+      move,
+    };
+    if (preference && safeMoves.includes(preference)) {
+      response.move = preference;
     }
+    console.log(`${gameState.game.id} MOVE ${gameState.turn}: ${response.move}`);
+    return response;
   }
-  const response: MoveResponse = {
-    move,
-  };
-
-  console.log(`${gameState.game.id} MOVE ${gameState.turn}: ${response.move}`);
-  return response;
+function getNextMove(head: ICoord, nextMove: Coord): Direction | null {
+  const x = head.x - nextMove.x;
+  const y = head.y - nextMove.y;
+  if (x == 1) {
+    return "left";
+  } else if (x == -1) {
+    return "right";
+  } else if (y == 1) {
+    return "down";
+  } else if (y == -1) {
+    return "up";
+  } else {
+    return null;
+  }
 }
