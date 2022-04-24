@@ -180,7 +180,7 @@ class Coord implements ICoord {
  * @param state 
  * @returns Coord[][]
  */
-function bfsPaths(state: GameState): Coord[][] {
+export function bfsPaths(state: GameState): Coord[][] {
   const start = state.you.head;
   const foods = state.board.food;
   const queue: Coord[] = [Coord.from(start)];
@@ -250,6 +250,7 @@ export function move(gameState: GameState): MoveResponse {
     console.log(`${gameState.game.id} MOVE ${gameState.turn}: ${response.move}`);
     return response;
   }
+
 function getNextMove(head: ICoord, nextMove: Coord): Direction | null {
   const x = head.x - nextMove.x;
   const y = head.y - nextMove.y;
