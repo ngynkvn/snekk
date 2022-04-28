@@ -1,0 +1,19 @@
+services:
+  bot:
+    build: ./bot
+    volumes:
+      - ./bot:/bot
+    working_dir: /bot
+    command: npm run start
+  rules:
+    build:
+      context: .
+      dockerfile: ./rules.Dockerfile
+    volumes:
+      - ./logs:/logs
+    working_dir: /rules
+    command: 
+      - /wait-for-it.sh
+      - bot:8080
+      - --
+      - /run_rules.sh
