@@ -1,5 +1,5 @@
-import { Coord, neighborCoords, StringMap, StringSet } from "./types";
-import { InfoResponse, GameState, MoveResponse, Game, Coord as ICoord } from "./bs-types";
+import { neighborCoords, StringMap, StringSet } from "./types";
+import { InfoResponse, GameState, MoveResponse, Coord } from "./bs-types";
 import * as coord from "./types"
 
 export function info(): InfoResponse {
@@ -39,7 +39,7 @@ function allMoves(): PossibleMoves {
 /**
  * Checks where `a` will hit `b` for all cardinals.
  */
-function preventHit(a: ICoord, b: ICoord): PossibleMoves {
+function preventHit(a: Coord, b: Coord): PossibleMoves {
   const preventHit: PossibleMoves = allMoves();
   if (a.x == b.x) {
     if (a.y + 1 == b.y) {
@@ -141,8 +141,8 @@ export function bfsPaths(state: GameState): Coord[][] {
   const start = state.you.head;
   const foods = state.board.food;
   const queue: Coord[] = [start];
-  const visited: StringSet<ICoord> = new StringSet();
-  const paths: StringMap<ICoord, ICoord[]> = new StringMap();
+  const visited: StringSet<Coord> = new StringSet();
+  const paths: StringMap<Coord, Coord[]> = new StringMap();
 
   while (queue.length > 0) {
     const current = queue.shift()!;
@@ -164,7 +164,7 @@ export function bfsPaths(state: GameState): Coord[][] {
       }
     });
   }
-  const foodPaths = foods.map(paths.get.bind(paths)).filter((p: ICoord[] | undefined) => p !== undefined);
+  const foodPaths = foods.map(paths.get.bind(paths)).filter((p: Coord[] | undefined) => p !== undefined);
   return foodPaths as Coord[][];
 }
 
@@ -183,7 +183,7 @@ export function move(gameState: GameState): MoveResponse {
   // Step 4 - Find food.
   // Use information in gameState to seek out and find food.
   const head = gameState.you.head;
-  const dist = (c: ICoord) => Math.abs(head.x - c.x) + Math.abs(head.y - c.y);
+  const dist = (c: Coord) => Math.abs(head.x - c.x) + Math.abs(head.y - c.y);
   const foods = gameState.board.food.sort((a, b) => dist(a) - dist(b));
   let preference: (Direction | null) = null;
   const foodPaths = bfsPaths(gameState);
@@ -208,7 +208,7 @@ export function move(gameState: GameState): MoveResponse {
     return response;
   }
 
-function getNextMove(head: ICoord, nextMove: Coord): Direction | null {
+function getNextMove(head: Coord, nextMove: Coord): Direction | null {
   const x = head.x - nextMove.x;
   const y = head.y - nextMove.y;
   if (x == 1) {
