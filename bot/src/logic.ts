@@ -1,5 +1,6 @@
 import { Coord, neighborCoords, StringMap, StringSet } from "./types";
 import { InfoResponse, GameState, MoveResponse, Game, Coord as ICoord } from "./bs-types";
+import * as coord from "./types"
 
 export function info(): InfoResponse {
   console.log("INFO");
@@ -139,7 +140,7 @@ function preventHitEnemy(
 export function bfsPaths(state: GameState): Coord[][] {
   const start = state.you.head;
   const foods = state.board.food;
-  const queue: Coord[] = [Coord.from(start)];
+  const queue: Coord[] = [start];
   const visited: StringSet<ICoord> = new StringSet();
   const paths: StringMap<ICoord, ICoord[]> = new StringMap();
 
@@ -155,8 +156,8 @@ export function bfsPaths(state: GameState): Coord[][] {
         neighbor.y < state.board.height &&
         !visited.has(neighbor) && // Not visited
         !paths.has(neighbor) && // Not in a path
-        !neighbor.existsIn(state.you.body) && // Not in your body
-        !state.board.snakes.some((s) => neighbor.existsIn(s.body)) // Not in an enemy's body
+        !coord.existsIn(neighbor, state.you.body) && // Not in your body
+        !state.board.snakes.some((s) => coord.existsIn(neighbor, s.body)) // Not in an enemy's body
       ) {
         queue.push(neighbor);
         paths.set(neighbor, [...(paths.get(current) || []), neighbor]);

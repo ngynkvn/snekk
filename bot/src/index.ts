@@ -29,5 +29,6 @@ app.post("/end", (req: Request, res: Response) => {
 
 // Start the Express server
 app.listen(port, () => {
+  console.log(`Hey Kev!`)
   console.log(`Starting Battlesnake Server at http://0.0.0.0:${port}...`);
 });

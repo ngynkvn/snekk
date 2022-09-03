@@ -1,4 +1,5 @@
-import { Coord as ICoord } from "./bs-types";
+import { Coord } from "./bs-types";
+export { Coord }
 export class StringMap<T extends object, K> extends Map<T, K> {
   private map: { [key: string]: K } = {};
   set(key: T, value: K): this {
@@ -23,24 +24,24 @@ export class StringSet<T extends object> {
   }
 }
 
+// Does not guarantee a valid location
 export function neighborCoords(coord: Coord): Coord[] {
   return [
     { x: coord.x - 1, y: coord.y },
     { x: coord.x + 1, y: coord.y },
     { x: coord.x, y: coord.y - 1 },
     { x: coord.x, y: coord.y + 1 },
-  ].map(Coord.from);
+  ];
 }
 
-export class Coord implements ICoord {
-  constructor(public x: number, public y: number) { }
-  static from(coord: ICoord): Coord {
-    return new Coord(coord.x, coord.y);
-  }
-  existsIn(coords: ICoord[]): boolean {
-    return coords.some((c) => c.x == this.x && c.y == this.y);
-  }
-  toString(): string {
-    return `(${this.x}, ${this.y})`;
-  }
+export function from(x: number, y: number): Coord {
+  return {x, y};
+}
+
+export function existsIn({x, y}: Coord, coords: Coord[]): boolean {
+  return coords.some((c) => c.x == x && c.y == y);
+}
+
+export function toString(c: Coord): string {
+  return `(${c.x}, ${c.y})`;
 }
