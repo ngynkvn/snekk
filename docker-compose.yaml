@@ -3,6 +3,7 @@ services:
     build: ./bot
     volumes:
       - ./bot:/kevin/bot
+      - ./db:/db/bot
       - ./log/bot:/log
     command: npm run dev
   rules:
