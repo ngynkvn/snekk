@@ -15,22 +15,22 @@ export interface MoveResponse {
 }
 
 export interface RoyaleSettings {
-    shrinkEveryNTurns: number
+    shrinkEveryNTurns: number;
 }
 
 export interface SquadSettings {
     allowBodyCollisions: boolean;
     sharedElimination: boolean;
     sharedHealth: boolean;
-    sharedLength: boolean
+    sharedLength: boolean;
 }
 
 export interface RulesetSettings {
     foodSpawnChance: number;
     minimumFood: number;
     hazardDamagePerTurn: number;
-    royale:RoyaleSettings;
-    squad:SquadSettings;
+    royale: RoyaleSettings;
+    squad: SquadSettings;
 }
 
 export interface Ruleset {
