@@ -1,15 +1,12 @@
 import Database from 'better-sqlite3';
 import path from 'path';
-const db = new Database(path.resolve('/db/bot.db'), {
+import {log} from './log';
+
+export const db = new Database(path.resolve('/db/bot.db'), {
     fileMustExist: true
 });
+log.info("Database connected", db.name)
 
-
-
-function query(sql, params) {
+export function query(sql: any, params: any) {
   return db.prepare(sql).all(params);
-}
-
-module.exports = {
-  query
 }

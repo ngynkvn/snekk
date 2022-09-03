@@ -1,4 +1,8 @@
-FROM node:lts
+FROM node:18-bullseye
+
+RUN apt-get update && apt-get install \
+    sqlite3 
+
 RUN curl -f https://get.pnpm.io/v6.16.js | node - add --global pnpm
 
 
@@ -14,9 +18,5 @@ RUN pnpm install -r --offline
 # setup application folders
 RUN mkdir /log && mkdir /db
 
-RUN apt-get update && apt-get install sqlite3
-
-RUN cat sql/create_tables.sqlite3 | sqlite3 /db/bot.db
-
 EXPOSE 8080
-CMD ["npm", "start"]
+CMD ["/kevin/bot/entrypoint.sh"]
