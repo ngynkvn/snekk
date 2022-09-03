@@ -3,13 +3,14 @@ services:
     build: ./bot
     volumes:
       - ./bot:/kevin/bot
+      - ./log/bot:/log
     command: npm run dev
   rules:
     build:
       context: .
       dockerfile: ./rules.Dockerfile
     volumes:
-      - ./logs:/logs
+      - ./log/rules:/log
     command: 
       - /wait-for-it.sh
       - bot:8080

@@ -11,5 +11,8 @@ WORKDIR /kevin/bot
 ADD . ./
 RUN pnpm install -r --offline
 
+# setup application folders
+RUN mkdir /log
+
 EXPOSE 8080
 CMD ["npm", "start"]

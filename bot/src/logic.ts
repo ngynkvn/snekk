@@ -1,9 +1,9 @@
 import { neighborCoords, StringMap, StringSet } from "./types";
 import { InfoResponse, GameState, MoveResponse, Coord } from "./bs-types";
 import * as coord from "./types"
+import {log} from './log'
 
 export function info(): InfoResponse {
-  console.log("INFO");
   const response: InfoResponse = {
     apiversion: "1",
     author: "Kevin Nguyen",
@@ -11,15 +11,16 @@ export function info(): InfoResponse {
     head: "all-seeing",
     tail: "default",
   };
+  log.info("INFO", {response});
   return response;
 }
 
 export function start(gameState: GameState): void {
-  console.log(`${gameState.game.id} START`);
+  log.info(`START`, {id: gameState.game.id});
 }
 
 export function end(gameState: GameState): void {
-  console.log(`${gameState.game.id} END\n`);
+  log.info(`END`, {id: gameState.game.id});
 }
 
 type Direction = "up" | "down" | "left" | "right";
@@ -204,7 +205,11 @@ export function move(gameState: GameState): MoveResponse {
     if (preference && safeMoves.includes(preference)) {
       response.move = preference;
     }
-    console.log(`${gameState.game.id} MOVE ${gameState.turn}: ${response.move}`);
+    log.info(`MOVE`, {
+      id: gameState.game.id,
+      turn: gameState.turn,
+      move: response.move,
+    });
     return response;
   }
 
