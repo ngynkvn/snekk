@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 
 import { info, start, move, end } from "./logic";
 import { log } from "./log";
+import { GameState } from "./bs-types";
 
 const app = express();
 app.use(express.json());
@@ -12,19 +13,20 @@ app.use(function (req, res, next) {
 
 const port = process.env.PORT || 8080;
 
-app.get("/", (req: Request, res: Response) => {
+app.get("/", (req: Request<{}, {}, {}>, res: Response) => {
     res.send(info());
 });
 
-app.post("/start", (req: Request, res: Response) => {
+app.post("/start", (req: Request<{}, {}, GameState>, res: Response) => {
     res.send(start(req.body));
 });
 
-app.post("/move", (req: Request, res: Response) => {
+app.post("/move", (req: Request<{}, {}, GameState>, res: Response) => {
+    log.info(req.body)
     res.send(move(req.body));
 });
 
-app.post("/end", (req: Request, res: Response) => {
+app.post("/end", (req: Request<{}, {}, GameState>, res: Response) => {
     res.send(end(req.body));
 });
 
