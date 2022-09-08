@@ -1,6 +1,8 @@
 services:
   bot:
-    build: ./bot
+    build:
+      context: ./bot
+      target: development
     volumes:
       - ./bot:/kevin/bot
       - ./db:/db
