@@ -25,7 +25,6 @@ CMD ["npm", "run", "dev"]
 FROM base as build
 RUN npm run build
 
-FROM base as production
+FROM build as production
 EXPOSE 8080
-COPY --from=build /kevin/bot/build /kevin/bot/
 CMD ["node", "build/index.js"]
