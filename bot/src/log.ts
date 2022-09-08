@@ -3,10 +3,12 @@ import { appendFileSync } from "node:fs";
 
 const timestamp = Date.now();
 function logToTransport(logObject: ILogObject) {
-    appendFileSync(
-        `/log/bot-${timestamp.toString()}.log`,
-        JSON.stringify(logObject) + "\n"
-    );
+    if(process.env.NODE_ENV !== 'test') {
+        appendFileSync(
+            `/log/bot-${timestamp.toString()}.log`,
+            JSON.stringify(logObject) + "\n"
+        );
+    }
 }
 
 // Configuration
