@@ -1,6 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
-import { bfsPaths, info, move } from "../src/logic";
+import { info, move } from "../src/logic";
 import { Battlesnake, Coord, GameState, MoveResponse } from "../src/bs-types";
+import { bfsPaths } from '../src/heuristic/basicSnake'
 import { merge } from "lodash";
 
 type Config = {
