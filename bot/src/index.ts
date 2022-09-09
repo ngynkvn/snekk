@@ -21,10 +21,10 @@ const makeRouter = (bAPI: BotAPI): Router => {
     type GameStateRequest = Request<{}, {}, GameState>;
     router.use((currGameState: GameStateRequest, res: Response, next) => {
         // Log path
-        log.info(currGameState.path, currGameState.body.game.id)
+        log.info(currGameState.path, currGameState.body?.game?.id)
         next()
     })
-    app.get("/", (req: Request<{}, {}, {}>, res: Response) => {
+    router.get("/", (req: Request<{}, {}, {}>, res: Response) => {
         res.send(bAPI.info());
     });
     router.post('/start', (currGameState: GameStateRequest, res: Response) => {
