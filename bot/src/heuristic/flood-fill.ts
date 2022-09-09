@@ -56,8 +56,8 @@ function info(): InfoResponse {
     const response: InfoResponse = {
         apiversion: "1",
         author: "Kevin Nguyen",
-        color: "#2a3b57",
-        head: "all-seeing",
+        color: "#42253B",
+        head: "beluga",
         tail: "default",
     };
     return response;
