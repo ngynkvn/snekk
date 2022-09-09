@@ -1,5 +1,6 @@
-import { Coord, GameState, MoveResponse } from "../bs-types";
+import { Coord, GameState, InfoResponse, MoveResponse } from "../bs-types";
 import { log } from "../log";
+import { BotAPI } from "../logic";
 import { neighborCoords, StringMap, StringSet, existsIn } from "../types";
 
 export function basicSnake(gameState: GameState): MoveResponse {
@@ -191,8 +192,10 @@ export function bfsPaths(state: GameState): Coord[][] {
     }
     const foodPaths = foods
         .map(paths.get.bind(paths))
-        .filter((p: Coord[] | undefined) => p !== undefined);
-    return foodPaths as Coord[][];
+        .filter((p): p is Coord[] => {
+            return p !== undefined;
+        });
+    return foodPaths;
 }
 
 
@@ -209,5 +212,27 @@ export function getNextMove(head: Coord, nextMove: Coord): Direction | null {
         return "up";
     } else {
         return null;
+    }
+}
+
+function info(): InfoResponse {
+    const response: InfoResponse = {
+        apiversion: "1",
+        author: "Kevin Nguyen",
+        color: "#99F7AB",
+        head: "default",
+        tail: "default",
+    };
+    return response;
+}
+function start(gameState: GameState): void {}
+function end(gameState: GameState): void {}
+
+export default function api(): BotAPI {
+    return {
+        info,
+        start,
+        end,
+        move: basicSnake,
     }
 }

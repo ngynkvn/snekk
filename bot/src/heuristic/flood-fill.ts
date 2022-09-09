@@ -1,6 +1,6 @@
-import { GameState, Coord, Battlesnake } from "../bs-types";
+import { GameState, Coord, Battlesnake, InfoResponse, MoveResponse } from "../bs-types";
 import { log } from "../log";
-import { move } from "../logic";
+import { BotAPI } from "../logic";
 import { Decision, CellType, World } from "./prelude";
 
 /**
@@ -8,7 +8,7 @@ import { Decision, CellType, World } from "./prelude";
  * @param gameState The gamestate object received from Battlesnakes.
  * @returns a Decision, 'up', 'down', 'left', 'right'
  */
-export function floodFill(gameState: GameState): Decision {
+export function floodFill(gameState: GameState): { move: string } {
     // Inputs from GameState
     const { you, board: { snakes, hazards } } = gameState;
     const { width, height } = gameState.board;
@@ -22,7 +22,7 @@ export function floodFill(gameState: GameState): Decision {
     const moves: [string, number][] = spread.map(m => {
         return [m.dir, calcFill(map, m).size]
     })
-    if(moves.length === 0) {
+    if (moves.length === 0) {
         log.fatal(new Error('Rest In Peace.'))
     }
 
@@ -35,10 +35,10 @@ export function floodFill(gameState: GameState): Decision {
     }, ['nil', -1])
 
     if (decision === 'nil') {
-        log.fatal(new Error('Decision could not be made!: ' + map.toString()))
+        log.fatal(new Error('Decision could not be made!:\n' + map.toString() + `\n${gameState}`))
     }
 
-    return decision as Decision;
+    return {move: decision} ;
 }
 
 export function calcFill(map: World, move: Coord, visitedTiles: Set<number> = new Set()): Set<number> {
@@ -52,7 +52,24 @@ export function calcFill(map: World, move: Coord, visitedTiles: Set<number> = ne
     return visitedTiles
 }
 
-function markDeadly(map: World, ...coords: Coord[]): World {
-    coords.forEach(map.mark('D'));
-    return map
+function info(): InfoResponse {
+    const response: InfoResponse = {
+        apiversion: "1",
+        author: "Kevin Nguyen",
+        color: "#2a3b57",
+        head: "all-seeing",
+        tail: "default",
+    };
+    return response;
+}
+function start(gameState: GameState): void {}
+function end(gameState: GameState): void {}
+
+export default function api(): BotAPI {
+    return {
+        info,
+        start,
+        end,
+        move: floodFill,
+    }
 }
