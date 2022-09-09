@@ -1,4 +1,5 @@
 # Snekk 🐍
+[![Deploy to Fly](https://github.com/ngynkvn/snekk/actions/workflows/main.yml/badge.svg)](https://github.com/ngynkvn/snekk/actions/workflows/main.yml)
 
 Hi. This is my pet project for messing with docker, containerization, and managing networked application services
 
