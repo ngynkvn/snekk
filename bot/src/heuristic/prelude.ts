@@ -9,6 +9,12 @@ export type Player = string;
 export type CellType = Safe | Death | Player | Outside;
 export type Map = CellType[];
 
+export type IconSet = {
+    snakes: string[]
+    safe: string
+    hazard: string
+}
+
 // TODO: Probably a better name than 'World'
 export class World {
     map: Array<CellType>;
@@ -36,6 +42,52 @@ export class World {
         w.map = arr as Array<CellType>;
         return w
     }
+    static DEFAULT_SNAKE_ICONS = ["🥸","🎃","👽", "🌕", "🌑", "🍪"];
+
+    static DEFAULT_ENV_ICONS: IconSet = {snakes: World.DEFAULT_SNAKE_ICONS, hazard:"🟥", safe: "⬜️"};
+
+    toEmojiString({snakes, hazard, safe} = World.DEFAULT_ENV_ICONS): string {
+        const snakeMap: Record<string, string> = {};
+        let i = 0;
+        return this.map.reduce((prev: string[][], curr) => {
+            if (curr.length > 1) { // Player 
+                if(!snakeMap[curr]) {
+                    snakeMap[curr] = snakes[i];
+                    i++;
+                }
+                curr = snakeMap[curr];
+            } else if(curr === 'S') {
+                curr = safe
+            } else if (curr === 'D') {
+                curr = hazard
+            }
+            if (prev[prev.length - 1].length < this.width) {
+                prev[prev.length - 1].push(curr);
+                return prev;
+            } else {
+                prev.push([curr]);
+                return prev
+            }
+        }, [[]]).reverse()
+            .map(a => a.join(''))
+            .join('\n')
+    }
+    toString(): string {
+        return this.map.reduce((prev: string[][], curr) => {
+            if (curr.length > 1) { // Player 
+                curr = '#';
+            }
+            if (prev[prev.length - 1].length < this.width) {
+                prev[prev.length - 1].push(curr);
+                return prev;
+            } else {
+                prev.push([curr]);
+                return prev
+            }
+        }, [[]]).reverse()
+            .map(a => a.join(''))
+            .join('\n')
+    }
 
     i(c: Coord): number {
         return c.x + c.y * this.height
@@ -45,7 +97,7 @@ export class World {
     };
 
     check(c: Coord): CellType {
-        if(this.inBounds(c)) {
+        if (this.inBounds(c)) {
             return this.map[this.i(c)]
         } else {
             return 'O';

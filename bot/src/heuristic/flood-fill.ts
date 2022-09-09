@@ -1,5 +1,6 @@
 import { GameState, Coord, Battlesnake } from "../bs-types";
 import { log } from "../log";
+import { move } from "../logic";
 import { Decision, CellType, World } from "./prelude";
 
 /**
@@ -21,6 +22,9 @@ export function floodFill(gameState: GameState): Decision {
     const moves: [string, number][] = spread.map(m => {
         return [m.dir, calcFill(map, m).size]
     })
+    if(moves.length === 0) {
+        log.fatal(new Error('Rest In Peace.'))
+    }
 
     // Pick the best move
     const [decision, _] = moves.reduce(([prevDir, prevTileCount], [currDir, currTileCount]) => {
@@ -31,7 +35,7 @@ export function floodFill(gameState: GameState): Decision {
     }, ['nil', -1])
 
     if (decision === 'nil') {
-        log.fatal(new Error('Decision could not be made!'))
+        log.fatal(new Error('Decision could not be made!: ' + map.toString()))
     }
 
     return decision as Decision;
