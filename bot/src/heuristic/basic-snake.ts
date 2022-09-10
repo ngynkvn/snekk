@@ -31,6 +31,7 @@ export function basicSnake(gameState: GameState): MoveResponse {
     }
 
     // Step 5: Murder?
+    let availableKillMove = null;
     const snakes = gameState.board.snakes;
     snakes.forEach((s) => {
         if(gameState.you.id === s.id) {
@@ -53,7 +54,6 @@ export function basicSnake(gameState: GameState): MoveResponse {
 
     // Finally, choose a move from the available safe moves.
     let move = Array.from(safeMoves.values())[Math.floor(Math.random() * safeMoves.size)];
-    let availableKillMove = null;
     const response: MoveResponse = {
         move,
     };
