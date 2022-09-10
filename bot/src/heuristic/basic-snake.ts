@@ -2,23 +2,25 @@ import { Coord, GameState, InfoResponse, MoveResponse } from "../bs-types";
 import { log } from "../log";
 import { BotAPI } from "../logic";
 import { neighborCoords, StringMap, StringSet, existsIn } from "../types";
+import { coord, World } from "./prelude";
 
 export function basicSnake(gameState: GameState): MoveResponse {
-    const possibleMoves = allMoves();
+    const safeMoves = new Set<Decision>(['up', 'down', 'left', 'right']);
+    const world = World.fromGameState(gameState);
 
     // Step 0: Don't let your Battlesnake move back on it's own neck
     // Step 1 - Don't hit walls.
     // Step 2 - Don't hit yourself.
     // Step 3 - Don't collide with others.
-    preventNeckSnap(gameState, possibleMoves);
-    preventHitWalls(gameState, possibleMoves);
-    preventHitBody(gameState, possibleMoves);
-    preventHitEnemy(gameState, possibleMoves);
+    preventNeckSnap(gameState, safeMoves);
+    preventHitWalls(gameState, safeMoves);
+    preventHitBody(gameState, safeMoves);
+    preventHitEnemy(gameState, safeMoves);
 
     // Step 4 - Find food.
     // Use information in gameState to seek out and find food.
     const head = gameState.you.head;
-    let preference: Direction | null = null;
+    let preference: Decision | null = null;
     const foodPaths = bfsPaths(gameState);
     if (foodPaths.length > 0) {
         const foodPath = foodPaths.sort((a, b) => a.length - b.length)[0];
@@ -29,15 +31,28 @@ export function basicSnake(gameState: GameState): MoveResponse {
     }
 
     // Finally, choose a move from the available safe moves.
-    const safeMoves = DIRECTIONS.filter(
-        (key) => possibleMoves[key as Direction]
-    );
-    let move = safeMoves[Math.floor(Math.random() * safeMoves.length)];
+    let move = Array.from(safeMoves.values())[Math.floor(Math.random() * safeMoves.size)];
     const response: MoveResponse = {
         move,
     };
-    if (preference && safeMoves.includes(preference)) {
+    if (preference && safeMoves.has(preference)) {
         response.move = preference;
+    }
+    const wantToMurder = true;
+    // Our snake is murderous.
+    if (wantToMurder) {
+        const snakes = gameState.board.snakes;
+        snakes.forEach((s) => {
+            const [enemyHead] = s.body
+            // Calculate the possible moves for the enemy
+            world.spanOut(enemyHead)
+                .filter(possibleEnemyMove => coord.Distance(possibleEnemyMove, head) < 2 && gameState.you.length > s.length)
+                .forEach(possibleKillMove => {
+                    // We are able to murder
+                    const move = getDirTo(possibleKillMove, head)
+                    response.move = move
+                });
+        });
     }
     log.info(`MOVE`, {
         id: gameState.game.id,
@@ -47,76 +62,59 @@ export function basicSnake(gameState: GameState): MoveResponse {
     return response;
 }
 
-export type Direction = "up" | "down" | "left" | "right";
-export type PossibleMoves = {
-    [key in Direction]: boolean;
-};
-export const DIRECTIONS = ["up", "down", "left", "right"];
-export function allMoves(): PossibleMoves {
-    return {
-        up: true,
-        down: true,
-        left: true,
-        right: true,
-    };
-}
-
 /**
- * Checks where `a` will hit `b` for all cardinals.
+ * Only works on squares that are 1 block away.
+ * @param to 
+ * @param from 
  */
-function preventHit(a: Coord, b: Coord): PossibleMoves {
-    const preventHit: PossibleMoves = allMoves();
-    if (a.x == b.x) {
-        if (a.y + 1 == b.y) {
-            preventHit.up = false;
-        } else if (a.y - 1 == b.y) {
-            preventHit.down = false;
-        }
-    } else if (a.y == b.y) {
-        if (a.x + 1 == b.x) {
-            preventHit.right = false;
-        } else if (a.x - 1 == b.x) {
-            preventHit.left = false;
-        }
+export function getDirTo(to: Coord, from: Coord): Decision {
+    const { x: aX, y: aY } = to;
+    const { x: bX, y: bY } = from;
+    const [x, y] = [aX - bX, aY - bY];
+    switch (true) {
+        case x == -1 && y == 0:
+            return 'left'
+        case x == 1 && y == 0:
+            return 'right'
+        case x == 0 && y == 1:
+            return 'up'
+        case x == 0 && y == -1:
+            return 'down'
+        default:
+            throw `Too far!! dx=${x} dy=${y}`
     }
-    return preventHit;
 }
 
-// Copy moves from b to a
-function squishMoves(a: PossibleMoves, b: PossibleMoves): PossibleMoves {
-    a.up = a.up && b.up;
-    a.down = a.down && b.down;
-    a.left = a.left && b.left;
-    a.right = a.right && b.right;
-    return a;
-}
+export type Decision = "up" | "down" | "left" | "right";
+export const DIRECTIONS = ["up", "down", "left", "right"];
 
 export function preventNeckSnap(
     gameState: GameState,
-    possibleMoves: PossibleMoves
-): PossibleMoves {
+    possibleMoves: Set<Decision>
+): Set<Decision> {
     const [myHead, myNeck] = gameState.you.body;
-    return squishMoves(possibleMoves, preventHit(myHead, myNeck));
+    possibleMoves.delete(getDirTo(myHead, myNeck));
+    return possibleMoves
 }
 // Use information in gameState to prevent your Battlesnake from moving beyond the boundaries of the board.
 export function preventHitWalls(
     gameState: GameState,
-    possibleMoves: PossibleMoves
-): PossibleMoves {
+    possibleMoves: Set<Decision>
+): Set<Decision> {
     const boardWidth = gameState.board.width;
     const boardHeight = gameState.board.height;
     const head = gameState.you.head;
     if (head.x + 1 >= boardWidth) {
-        possibleMoves.right = false;
+        possibleMoves.delete('right');
     }
     if (head.x - 1 < 0) {
-        possibleMoves.left = false;
+        possibleMoves.delete('left');
     }
     if (head.y + 1 >= boardHeight) {
-        possibleMoves.up = false;
+        possibleMoves.delete('up');
     }
     if (head.y - 1 < 0) {
-        possibleMoves.down = false;
+        possibleMoves.delete('down');
     }
     return possibleMoves;
 }
@@ -124,30 +122,33 @@ export function preventHitWalls(
 // Use information in gameState to prevent your Battlesnake from colliding with itself.
 export function preventHitBody(
     gameState: GameState,
-    possibleMoves: PossibleMoves
-): PossibleMoves {
+    possibleMoves: Set<Decision>
+): Set<Decision> {
     const [head, ...body] = gameState.you.body;
-    body.filter((b) => Math.abs(b.x - head.x) + Math.abs(b.y - head.y) < 2) // Ignore parts that are >2 blocks away (Manhattan distance)
-        // Map the parts close by to a possible moves object
-        .map((part) => preventHit(head, part))
-        // Squish the possible moves together.
-        .reduce(squishMoves, possibleMoves);
+    body.filter((bodyPart) => {
+        const d = coord.Distance(head, bodyPart);
+        return d === 1
+    }) // Ignore parts that are >2 blocks away (Manhattan distance)
+        // Delete the moves that would collide with our body
+        .forEach((bodyPart) => possibleMoves.delete(getDirTo(bodyPart, head)))
     return possibleMoves;
 }
 // Use information in gameState to prevent your Battlesnake from colliding with others.
 export function preventHitEnemy(
     gameState: GameState,
-    possibleMoves: PossibleMoves
-): PossibleMoves {
+    possibleMoves: Set<Decision>
+): Set<Decision> {
     const [head] = gameState.you.body;
     const snakes = gameState.board.snakes;
     snakes.forEach((s) => {
         s.body
-            .filter((b) => Math.abs(b.x - head.x) + Math.abs(b.y - head.y) < 2)
-            // Map the parts close by to a possible moves object
-            .map((part) => preventHit(head, part))
-            // Squish the possible moves together.
-            .reduce(squishMoves, possibleMoves);
+            .filter((bodyPart) => {
+                const d = coord.Distance(head, bodyPart);
+                return d === 1
+            })
+            // Delete the moves that would collide with our body
+            .forEach((part) => possibleMoves.delete(getDirTo(part, head)))
+
     });
     return possibleMoves;
 }
@@ -199,7 +200,7 @@ export function bfsPaths(state: GameState): Coord[][] {
 }
 
 
-export function getNextMove(head: Coord, nextMove: Coord): Direction | null {
+export function getNextMove(head: Coord, nextMove: Coord): Decision | null {
     const x = head.x - nextMove.x;
     const y = head.y - nextMove.y;
     if (x == 1) {
@@ -225,8 +226,8 @@ function info(): InfoResponse {
     };
     return response;
 }
-function start(gameState: GameState): void {}
-function end(gameState: GameState): void {}
+function start(gameState: GameState): void { }
+function end(gameState: GameState): void { }
 
 export default function api(): BotAPI {
     return {

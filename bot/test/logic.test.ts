@@ -1,7 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
-import { info, move } from "../src/logic";
 import { Battlesnake, Coord, GameState, MoveResponse } from "../src/bs-types";
-import { bfsPaths } from '../src/heuristic/basicSnake'
+import { basicSnake, bfsPaths } from '../src/heuristic/basic-snake'
 import { merge } from "lodash";
 
 type Config = {
@@ -57,13 +56,6 @@ function createBattlesnake(id: string, body: Coord[]): Battlesnake {
     };
 }
 
-describe("Battlesnake API Version", () => {
-    it("should be api version 1", () => {
-        const result = info();
-        expect(result.apiversion).toBe("1");
-    });
-});
-
 describe("Battlesnake Moves", () => {
     it("should never move into its own neck", () => {
         // Arrange
@@ -78,7 +70,7 @@ describe("Battlesnake Moves", () => {
 
         // Act 1,000x (this isn't a great way to test, but it's okay for starting out)
         for (let i = 0; i < 1000; i++) {
-            const moveResponse: MoveResponse = move(gameState);
+            const moveResponse: MoveResponse = basicSnake(gameState);
             // In this state, we should NEVER move left.
             const allowedMoves = ["up", "down", "right"];
             expect(allowedMoves).toContain(moveResponse.move);

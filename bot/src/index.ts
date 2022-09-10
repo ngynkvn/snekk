@@ -44,7 +44,7 @@ const makeRouter = (bAPI: BotAPI): Router => {
     return router
 };
 
-app.use("/", makeRouter(floodFill()))
+app.use("/", makeRouter(basicSnake()))
 app.use("/basic", makeRouter(basicSnake()))
 
 
