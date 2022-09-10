@@ -30,8 +30,27 @@ export function basicSnake(gameState: GameState): MoveResponse {
         }
     }
 
+    // Step 5: Murder?
+    const snakes = gameState.board.snakes;
+    snakes.forEach((s) => {
+        const [enemyHead] = s.body
+        // Calculate the possible moves for the enemy
+        world.spanOut(enemyHead)
+            .filter(possibleEnemyMove => coord.Distance(possibleEnemyMove, head) < 2)
+            .forEach(possibleKillMove => {
+                // We are able to murder
+                if (gameState.you.length > s.length) {
+                    const move = getDirTo(possibleKillMove, head)
+                    availableKillMove = getDirTo(possibleKillMove, head);
+                } else { // We may get murdered
+                    safeMoves.delete(getDirTo(possibleKillMove, head))
+                }
+            });
+    });
+
     // Finally, choose a move from the available safe moves.
     let move = Array.from(safeMoves.values())[Math.floor(Math.random() * safeMoves.size)];
+    let availableKillMove = null;
     const response: MoveResponse = {
         move,
     };
@@ -40,19 +59,8 @@ export function basicSnake(gameState: GameState): MoveResponse {
     }
     const wantToMurder = true;
     // Our snake is murderous.
-    if (wantToMurder) {
-        const snakes = gameState.board.snakes;
-        snakes.forEach((s) => {
-            const [enemyHead] = s.body
-            // Calculate the possible moves for the enemy
-            world.spanOut(enemyHead)
-                .filter(possibleEnemyMove => coord.Distance(possibleEnemyMove, head) < 2 && gameState.you.length > s.length)
-                .forEach(possibleKillMove => {
-                    // We are able to murder
-                    const move = getDirTo(possibleKillMove, head)
-                    response.move = move
-                });
-        });
+    if (wantToMurder && availableKillMove) {
+        response.move = availableKillMove
     }
     log.info(`MOVE`, {
         id: gameState.game.id,
