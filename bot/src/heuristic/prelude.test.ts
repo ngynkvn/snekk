@@ -1,4 +1,5 @@
 import { World } from "./prelude";
+import { t } from "./test.util";
 
 describe('prelude', () => {
 
@@ -52,7 +53,6 @@ describe('prelude', () => {
     test('toString2', () => {
         const map = new World(3, 3);
         // Trimming function
-        const t = (s: string) => s.split('\n').map(s => s.trim()).filter(Boolean).join('\n')
         const cfg = { snakes: ["🐍"], hazard: "0", safe: "🔵" };
 
         // Sometimes I ask myself why I do the things I do

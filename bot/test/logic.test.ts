@@ -68,8 +68,7 @@ describe("Battlesnake Moves", () => {
             board: { width: 3, height: 3 },
         });
 
-        // Act 1,000x (this isn't a great way to test, but it's okay for starting out)
-        for (let i = 0; i < 1000; i++) {
+        for (let i = 0; i < 2; i++) {
             const moveResponse: MoveResponse = basicSnake(gameState);
             // In this state, we should NEVER move left.
             const allowedMoves = ["up", "down", "right"];

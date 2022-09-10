@@ -1,0 +1,1 @@
+export const t = (s: string) => s.split('\n').map(s => s.trim()).filter(Boolean).join('\n')
