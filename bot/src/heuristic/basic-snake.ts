@@ -33,17 +33,20 @@ export function basicSnake(gameState: GameState): MoveResponse {
     // Step 5: Murder?
     const snakes = gameState.board.snakes;
     snakes.forEach((s) => {
+        if(gameState.you.id === s.id) {
+            return;
+        }
         const [enemyHead] = s.body
         // Calculate the possible moves for the enemy
         world.spanOut(enemyHead)
             .filter(possibleEnemyMove => coord.Distance(possibleEnemyMove, head) < 2)
             .forEach(possibleKillMove => {
+                const move = getDirTo(possibleKillMove, head)
                 // We are able to murder
                 if (gameState.you.length > s.length) {
-                    const move = getDirTo(possibleKillMove, head)
-                    availableKillMove = getDirTo(possibleKillMove, head);
+                    availableKillMove = move;
                 } else { // We may get murdered
-                    safeMoves.delete(getDirTo(possibleKillMove, head))
+                    safeMoves.delete(move)
                 }
             });
     });
@@ -89,7 +92,7 @@ export function getDirTo(to: Coord, from: Coord): Decision {
         case x == 0 && y == -1:
             return 'down'
         default:
-            throw `Too far!! dx=${x} dy=${y}`
+            return '' as Decision;
     }
 }
 
