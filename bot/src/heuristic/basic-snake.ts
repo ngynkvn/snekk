@@ -46,7 +46,7 @@ export function basicSnake(gameState: GameState): MoveResponse {
                 // We are able to murder
                 if (gameState.you.length > s.length) {
                     availableKillMove = move;
-                } else { // We may get murdered
+                } else if(safeMoves.size > 1) { // We may get murdered
                     safeMoves.delete(move)
                 }
             });
