@@ -1,4 +1,5 @@
 import { Coord, GameState } from "../bs-types";
+import { log } from "../log";
 import { basicSnake, getDirTo } from "./basic-snake";
 import { World } from "./prelude";
 
@@ -10,14 +11,17 @@ describe('getDirTo', () => {
         expect(getDirTo({ x: 0, y: 0 }, { x: -1, y: 0 })).toBe('right')
     });
     it('doesnt die chasing head', () => {
-        const me = {
+        let me = {
+            id: "ME",
             head: { x: 3, y: 1 },
             body: [{ x: 3, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 1 }, { x: 1, y: 0 }],
         }
         const homie = {
+            id: "HOMIE",
             head: { x: 5, y: 1 },
             body: [{ x: 5, y: 1 }, { x: 4, y: 1 }, { x: 4, y: 0 }],
         }
+        me=homie;
         const gameState = {
             game: {},
             you: me,
@@ -32,6 +36,11 @@ describe('getDirTo', () => {
             },
             turn: {}
         } as GameState;
+        const w = World.fromGameState(gameState)
+        log.info('\n'+w.toString())
+        log.info(w.i({x: 4, y: 0}))
+        const span = w.spanOut(homie.head)
+        expect(span).toEqual([{x: 5, y: 0, dir:'down'}])
         expect(basicSnake(gameState).move).toBe('down')
     })
 })

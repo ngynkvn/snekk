@@ -51,7 +51,7 @@ export class World {
     static fromGameState(gameState: GameState): World {
         const w = new World(gameState.board.width, gameState.board.height, gameState)
         gameState.board.food.forEach(w.mark('F').bind(w))
-        gameState.board.snakes.forEach(s => w.mark(s.id))
+        gameState.board.snakes.forEach(s => s.body.forEach(w.mark(s.id)))
         return w
     }
 
@@ -101,12 +101,12 @@ export class World {
                 return prev
             }
         }, [[]]).reverse()
-            .map(a => a.join(''))
+            .map((a) => a.join(``))
             .join('\n')
     }
 
     i(c: Coord): number {
-        return c.x + c.y * this.height
+        return c.x + c.y * this.width
     };
     c(i: number): Coord {
         return { x: i % this.width, y: Math.floor(i / this.width) }
