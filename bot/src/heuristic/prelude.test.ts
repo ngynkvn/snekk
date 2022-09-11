@@ -1,4 +1,4 @@
-import { World } from "./prelude";
+import { coord, World } from "./prelude";
 import { t } from "./test.util";
 
 describe('prelude', () => {
@@ -74,5 +74,23 @@ describe('prelude', () => {
         🔵🐍🔵
         🐍🔵🔵
         `))
+    })
+})
+
+describe('coords', () => {
+    it('hopefully works', () => {
+        expect(coord.Includes({ x: 0, y: 0 }, [
+            { x: 1, y: 0 },
+            { x: 2, y: 0 },
+            { x: 3, y: 0 },
+            { x: 0, y: 0 },
+        ])).toBe(true);
+
+        expect(coord.Includes({ x: -1, y: 0 }, [
+            { x: 1, y: 0 },
+            { x: 2, y: 0 },
+            { x: 3, y: 0 },
+            { x: 0, y: 0 },
+        ])).toBe(false);
     })
 })

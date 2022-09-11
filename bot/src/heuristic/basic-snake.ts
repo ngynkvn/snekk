@@ -1,7 +1,8 @@
 import { Coord, GameState, InfoResponse, MoveResponse } from "../bs-types";
+import * as R from 'ramda';
 import { log } from "../log";
 import { BotAPI } from "../logic";
-import { neighborCoords, StringMap, StringSet, existsIn } from "../types";
+import { StringMap, StringSet, } from "../types";
 import { coord, World } from "./prelude";
 
 export function basicSnake(gameState: GameState): MoveResponse {
@@ -23,9 +24,9 @@ export function basicSnake(gameState: GameState): MoveResponse {
     let preference: Decision | null = null;
     const foodPaths = bfsPaths(gameState);
     if (foodPaths.length > 0) {
-        const foodPath = foodPaths.sort((a, b) => a.length - b.length)[0];
-        if (foodPath.length > 0) {
-            const [nextMove] = foodPath;
+        const [shortestPath] = foodPaths.sort((a, b) => a.length - b.length);
+        if (shortestPath.length > 0) {
+            const [nextMove] = shortestPath;
             preference = getNextMove(head, nextMove);
         }
     }
@@ -34,7 +35,7 @@ export function basicSnake(gameState: GameState): MoveResponse {
     let availableKillMove = null;
     const snakes = gameState.board.snakes;
     snakes.forEach((s) => {
-        if(gameState.you.id === s.id) {
+        if (gameState.you.id === s.id) {
             return;
         }
         const [enemyHead] = s.body
@@ -46,7 +47,7 @@ export function basicSnake(gameState: GameState): MoveResponse {
                 // We are able to murder
                 if (gameState.you.length > s.length) {
                     availableKillMove = move;
-                } else if(safeMoves.size > 1) { // We may get murdered
+                } else if (safeMoves.size > 1) { // We may get murdered
                     safeMoves.delete(move)
                 }
             });
@@ -164,6 +165,9 @@ export function preventHitEnemy(
     return possibleMoves;
 }
 
+function get<T extends keyof K, K>(s: T): (k: K) => K[T] {
+    return (k: K) => k[s]
+}
 /**
  *  Returns a list of all possible moves that can be made from the current game state.
  *  Considers the following rules:
@@ -183,7 +187,7 @@ export function bfsPaths(state: GameState): Coord[][] {
     while (queue.length > 0) {
         const current = queue.shift()!;
         visited.add(current);
-        const neighbors = neighborCoords(current);
+        const neighbors = coord.Sprawl(current);
         neighbors.forEach((neighbor) => {
             if (
                 neighbor.x >= 0 &&
@@ -192,10 +196,8 @@ export function bfsPaths(state: GameState): Coord[][] {
                 neighbor.y < state.board.height &&
                 !visited.has(neighbor) && // Not visited
                 !paths.has(neighbor) && // Not in a path
-                !existsIn(neighbor, state.you.body) && // Not in your body
-                !state.board.snakes.some((s) =>
-                    existsIn(neighbor, s.body)
-                ) // Not in an enemy's body
+                !coord.Includes(neighbor, state.you.body) && // Not in your body
+                !state.board.snakes.map(get('body')).some(R.partial(coord.Includes, [neighbor]))// Not in an enemy's body
             ) {
                 queue.push(neighbor);
                 paths.set(neighbor, [...(paths.get(current) || []), neighbor]);

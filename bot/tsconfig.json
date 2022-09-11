@@ -71,7 +71,7 @@
         "node_modules",
         "**/*.spec.ts",
         // Ignoring some old files, TODO: rewrite later
-        "src/heuristic/basicSnake.ts",
+        "src/heuristic/basic-snake.ts",
         "test/logic.test.ts"
     ]
 }

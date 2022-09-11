@@ -20,7 +20,7 @@ export function floodFill(gameState: GameState): { move: string } {
     const spread = map.spanOut(you.head);
     // Count number of safe tiles after a move, for each direction.
     const moves: [string, number][] = spread.map(m => {
-        return [m.dir, calcFill(map, m).size]
+        return [m.direction, calcFill(map, m).size]
     })
     if (moves.length === 0) {
         log.fatal(new Error('Rest In Peace.'))
