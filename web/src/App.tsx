@@ -7,6 +7,8 @@ function App() {
     const [settings, setSettings] = useState<Settings>({
         width: 11,
         height: 11,
+        marker: "D",
+        markerOptions: ["D", "S"],
     });
 
     return (
@@ -20,16 +22,22 @@ function App() {
 type Settings = {
     width: number;
     height: number;
+    marker: string;
+    markerOptions: string[];
 };
 type SettingsProps = {
     settings: Settings;
     setSettings: React.Dispatch<React.SetStateAction<Settings>>;
 };
-function Settings({ settings, setSettings }: SettingsProps): JSX.Element {
+function Settings({
+    settings: { marker, markerOptions, width, height },
+    setSettings,
+}: SettingsProps): JSX.Element {
     const formik = useFormik({
         initialValues: {
-            width: settings.width,
-            height: settings.height,
+            width,
+            height,
+            marker,
         },
         onSubmit: (newSettings) => {
             setSettings((prevSettings) => ({
@@ -59,27 +67,28 @@ function Settings({ settings, setSettings }: SettingsProps): JSX.Element {
                 onChange={formik.handleChange}
                 value={formik.values.height}
             ></input>
+            <label htmlFor="marker">Marker</label>
+            <select
+                value={marker}
+                id="marker"
+                name="marker"
+                onChange={(e) => {
+                    setSettings((prev) => ({
+                        ...prev,
+                        marker: e.target.value,
+                    }));
+                }}
+            >
+                {markerOptions.map((value) => {
+                    return (
+                        <option key={value} value={value}>
+                            {value}
+                        </option>
+                    );
+                })}
+            </select>
             <button type="submit">Submit</button>
         </form>
-    );
-}
-
-function Form() {
-    const [urlInput, setUrl] = useState("localhost:8080/");
-    const fetchMove = () => {};
-
-    return (
-        <div>
-            Input
-            <input
-                type={"text"}
-                onChange={(e) => {
-                    setUrl(e.target.value);
-                }}
-            />
-            <div>Game State</div>
-            <button onClick={fetchMove}>Get Move</button>
-        </div>
     );
 }
 
