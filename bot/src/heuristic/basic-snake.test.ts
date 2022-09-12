@@ -21,7 +21,6 @@ describe('getDirTo', () => {
             head: { x: 5, y: 1 },
             body: [{ x: 5, y: 1 }, { x: 4, y: 1 }, { x: 4, y: 0 }],
         }
-        me=homie;
         const gameState = {
             game: {},
             you: me,
@@ -40,7 +39,13 @@ describe('getDirTo', () => {
         log.info('\n'+w.toString())
         log.info(w.i({x: 4, y: 0}))
         const span = w.spanOut(homie.head)
-        expect(span).toEqual([{x: 5, y: 0, dir:'down'}])
+        expect(span).toEqual([{x: 5, y: 0, direction:'down'}])
         expect(basicSnake(gameState).move).toBe('down')
+    })
+})
+
+describe('bfsPaths', () => {
+    it('gives me a bfs', () => {
+
     })
 })
