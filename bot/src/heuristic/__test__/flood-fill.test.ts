@@ -1,5 +1,5 @@
-import { calcFill } from "./flood-fill"
-import { World } from "./prelude"
+import { calcFill } from "../flood-fill"
+import { World } from "../prelude"
 
 describe('flood fill', () => {
     test('calc_fill fills empty', () => {

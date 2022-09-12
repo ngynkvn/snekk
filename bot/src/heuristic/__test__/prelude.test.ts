@@ -1,4 +1,4 @@
-import { coord, World } from "./prelude";
+import { coord, World } from "../prelude";
 import { t } from "./test.util";
 
 describe('prelude', () => {

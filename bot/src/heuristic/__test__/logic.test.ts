@@ -1,9 +1,9 @@
 import { describe, expect, it } from "@jest/globals";
-import { Battlesnake, Coord, GameState, MoveResponse } from "../src/bs-types";
-import { basicSnake, bfsPathsToFood } from '../src/heuristic/basic-snake'
+import { Battlesnake, Coord, GameState, MoveResponse } from "../../bs-types";
+import { basicSnake, bfsPathsToFood } from '../basic-snake'
 import { merge } from "lodash";
-import { World } from "../src/heuristic/prelude";
-import { log } from "../src/log";
+import { World } from "../prelude";
+import { log } from "../../log";
 
 type Config = {
     [key in keyof GameState]?: Partial<GameState[key]>;

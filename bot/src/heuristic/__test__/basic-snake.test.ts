@@ -1,7 +1,7 @@
-import { Coord, GameState } from "../bs-types";
-import { log } from "../log";
-import { basicSnake, getDirTo } from "./basic-snake";
-import { World } from "./prelude";
+import { Coord, GameState } from "../../bs-types";
+import { log } from "../../log";
+import { basicSnake, getDirTo } from "../basic-snake";
+import { World } from "../prelude";
 
 describe('getDirTo', () => {
     it('returns the dirs I expect', () => {
