@@ -1,18 +1,18 @@
-name: Run Test
+name: Test Cases
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    push:
+        branches: ["main"]
+    pull_request:
+        branches: ["main"]
 
 jobs:
+    build:
+        runs-on: ubuntu-latest
 
-  build:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: cd bot/ && docker build . --file Dockerfile --target=test --tag test && docker run test
+        steps:
+            - uses: actions/checkout@v3
+            - name: Build the Docker image
+              run: docker build bot/ --target=test --tag test
+            - name:
+              run: docker run test
