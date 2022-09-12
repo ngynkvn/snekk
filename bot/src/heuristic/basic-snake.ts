@@ -2,27 +2,22 @@ import { Coord, GameState, InfoResponse, MoveResponse } from "../bs-types";
 import * as R from 'ramda';
 import { log } from "../log";
 import { BotAPI } from "../logic";
-import { StringMap, StringSet, } from "../types";
 import { coord, World } from "./prelude";
 
 export function basicSnake(gameState: GameState): MoveResponse {
-    const safeMoves = new Set<Decision>(['up', 'down', 'left', 'right']);
     const world = World.fromGameState(gameState);
+    const head = gameState.you.head;
 
     // Step 0: Don't let your Battlesnake move back on it's own neck
     // Step 1 - Don't hit walls.
     // Step 2 - Don't hit yourself.
     // Step 3 - Don't collide with others.
-    preventNeckSnap(gameState, safeMoves);
-    preventHitWalls(gameState, safeMoves);
-    preventHitBody(gameState, safeMoves);
-    preventHitEnemy(gameState, safeMoves);
+    const safeMoves = new Set<Decision>(world.spanOut(head).map(c => c.direction));
 
     // Step 4 - Find food.
     // Use information in gameState to seek out and find food.
-    const head = gameState.you.head;
     let preference: Decision | null = null;
-    const foodPaths = bfsPaths(gameState);
+    const foodPaths = bfsPathsToFood(world, gameState);
     if (foodPaths.length > 0) {
         const [shortestPath] = foodPaths.sort((a, b) => a.length - b.length);
         if (shortestPath.length > 0) {
@@ -93,6 +88,8 @@ export function getDirTo(to: Coord, from: Coord): Decision {
         case x == 0 && y == -1:
             return 'down'
         default:
+            const stackTrace = log.error('Invalid set of coordinates were passed.');
+            log.error(stackTrace.stack)
             return '' as Decision;
     }
 }
@@ -100,74 +97,6 @@ export function getDirTo(to: Coord, from: Coord): Decision {
 export type Decision = "up" | "down" | "left" | "right";
 export const DIRECTIONS = ["up", "down", "left", "right"];
 
-export function preventNeckSnap(
-    gameState: GameState,
-    possibleMoves: Set<Decision>
-): Set<Decision> {
-    const [myHead, myNeck] = gameState.you.body;
-    possibleMoves.delete(getDirTo(myHead, myNeck));
-    return possibleMoves
-}
-// Use information in gameState to prevent your Battlesnake from moving beyond the boundaries of the board.
-export function preventHitWalls(
-    gameState: GameState,
-    possibleMoves: Set<Decision>
-): Set<Decision> {
-    const boardWidth = gameState.board.width;
-    const boardHeight = gameState.board.height;
-    const head = gameState.you.head;
-    if (head.x + 1 >= boardWidth) {
-        possibleMoves.delete('right');
-    }
-    if (head.x - 1 < 0) {
-        possibleMoves.delete('left');
-    }
-    if (head.y + 1 >= boardHeight) {
-        possibleMoves.delete('up');
-    }
-    if (head.y - 1 < 0) {
-        possibleMoves.delete('down');
-    }
-    return possibleMoves;
-}
-
-// Use information in gameState to prevent your Battlesnake from colliding with itself.
-export function preventHitBody(
-    gameState: GameState,
-    possibleMoves: Set<Decision>
-): Set<Decision> {
-    const [head, ...body] = gameState.you.body;
-    body.filter((bodyPart) => {
-        const d = coord.Distance(head, bodyPart);
-        return d === 1
-    }) // Ignore parts that are >2 blocks away (Manhattan distance)
-        // Delete the moves that would collide with our body
-        .forEach((bodyPart) => possibleMoves.delete(getDirTo(bodyPart, head)))
-    return possibleMoves;
-}
-// Use information in gameState to prevent your Battlesnake from colliding with others.
-export function preventHitEnemy(
-    gameState: GameState,
-    possibleMoves: Set<Decision>
-): Set<Decision> {
-    const [head] = gameState.you.body;
-    const snakes = gameState.board.snakes;
-    snakes.forEach((s) => {
-        s.body
-            .filter((bodyPart) => {
-                const d = coord.Distance(head, bodyPart);
-                return d === 1
-            })
-            // Delete the moves that would collide with our body
-            .forEach((part) => possibleMoves.delete(getDirTo(part, head)))
-
-    });
-    return possibleMoves;
-}
-
-function get<T extends keyof K, K>(s: T): (k: K) => K[T] {
-    return (k: K) => k[s]
-}
 /**
  *  Returns a list of all possible moves that can be made from the current game state.
  *  Considers the following rules:
@@ -177,38 +106,33 @@ function get<T extends keyof K, K>(s: T): (k: K) => K[T] {
  * @param state
  * @returns Coord[][]
  */
-export function bfsPaths(state: GameState): Coord[][] {
+export function bfsPathsToFood(world: World, state: GameState): Coord[][] {
     const start = state.you.head;
     const foods = state.board.food;
     const queue: Coord[] = [start];
-    const visited: StringSet<Coord> = new StringSet();
-    const paths: StringMap<Coord, Coord[]> = new StringMap();
+    const visited: Set<number> = new Set();
+    const paths: Map<number, number[]> = new Map();
 
     while (queue.length > 0) {
         const current = queue.shift()!;
-        visited.add(current);
-        const neighbors = coord.Sprawl(current);
+        visited.add(world.i(current));
+        const neighbors = world.spanOut(current);
         neighbors.forEach((neighbor) => {
             if (
-                neighbor.x >= 0 &&
-                neighbor.x < state.board.width &&
-                neighbor.y >= 0 &&
-                neighbor.y < state.board.height &&
-                !visited.has(neighbor) && // Not visited
-                !paths.has(neighbor) && // Not in a path
-                !coord.Includes(neighbor, state.you.body) && // Not in your body
-                !state.board.snakes.map(get('body')).some(R.partial(coord.Includes, [neighbor]))// Not in an enemy's body
+                !visited.has(world.i(neighbor)) && // Not visited
+                !paths.has(world.i(neighbor))      // Not already part of a path
             ) {
                 queue.push(neighbor);
-                paths.set(neighbor, [...(paths.get(current) || []), neighbor]);
+                paths.set(world.i(neighbor), [...(paths.get(world.i(current)) || []), world.i(neighbor)]);
             }
         });
     }
     const foodPaths = foods
+        .map(world.i.bind(world))
         .map(paths.get.bind(paths))
-        .filter((p): p is Coord[] => {
+        .filter((p): p is number[] => {
             return p !== undefined;
-        });
+        }).map((path) => path.map(world.c.bind(world)));
     return foodPaths;
 }
 

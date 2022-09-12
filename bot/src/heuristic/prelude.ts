@@ -129,31 +129,57 @@ export class World {
         const spot = this.map[this.i(c)]
         return this.inBounds(c) && (spot == 'S' || spot == 'F')
     };
-    spanOut(c: Coord): (Coord & { direction: string })[] {
+    spanOut(c: Coord): (Coord & { direction: Decision })[] {
         return coord.Sprawl(c).filter(this.isSafe.bind(this))
     };
 }
 
-export const coord = {
-    Equals: (a: Coord, b: Coord) => a.x == b.x && a.y == b.y,
+type CoordFn = {
+    Origin: Coord,
+    Equals: (a: Coord, b: Coord) => boolean;
     // Manhattan distance
-    Distance: (a: Coord, b: Coord): number => Math.abs(a.x - b.x) + Math.abs(a.y - b.y),
-    Includes: (a: Coord, cs: Coord[]): boolean => cs.some(R.partial(coord.Equals, [a])),
+    Distance: (a: Coord, b: Coord) => number,
+    Includes: (a: Coord, cs: Coord[]) => boolean;
     /**
      * Returns possible new coordinates assuming the given direction is taken.
      * @param a Coord
      * @returns 
      */
-    Sprawl: (a: Coord): (Coord & { direction: Decision })[] => {
-        return [
-            { x: a.x + 1, y: a.y, direction: 'right' },
-            { x: a.x - 1, y: a.y, direction: 'left' },
-            { y: a.y + 1, x: a.x, direction: 'up' },
-            { y: a.y - 1, x: a.x, direction: 'down' },
-        ]
+    Sprawl: (a: Coord) => (Coord & { direction: Decision })[];
+    Towards: (to: Coord, from: Coord) => Coord;
+    // Length(to) == Distance(to, origin)
+    Length: (to: Coord) => number;
+    toString: (c: Coord) => string;
+    from: (x: number, y: number) => Coord;
+
+}
+
+export const coord: CoordFn = {
+    Origin: { x: 0, y: 0 },
+    Equals: (a, b) => a.x == b.x && a.y == b.y,
+    // Manhattan distance
+    Distance: (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y),
+    Includes: (a, cs) => cs.some(R.partial(coord.Equals, [a])),
+    /**
+     * Returns possible new coordinates assuming the given direction is taken.
+     * @param a Coord
+     * @returns 
+     */
+    Sprawl: (a) => ([
+        { x: a.x + 1, y: a.y, direction: 'right' },
+        { x: a.x - 1, y: a.y, direction: 'left' },
+        { y: a.y + 1, x: a.x, direction: 'up' },
+        { y: a.y - 1, x: a.x, direction: 'down' },
+    ]),
+    Towards: (to, from) => {
+        return { x: to.x - from.x, y: to.y - from.y, }
     },
-    toString: (c: Coord): string => {
-        return `(${c.x}, ${c.y})`;
+    // Length(a) == Distance(a, Origin) == Distance(Origin, a)
+    Length: (to) => {
+        return Math.abs(to.x) + Math.abs(to.y)
     },
-    from: (x: number, y: number): Coord => ({x, y})
+    toString: ({ x, y }) => {
+        return `(${x}, ${y})`;
+    },
+    from: (x, y) => ({ x, y })
 }

@@ -1,7 +1,9 @@
 import { describe, expect, it } from "@jest/globals";
 import { Battlesnake, Coord, GameState, MoveResponse } from "../src/bs-types";
-import { basicSnake, bfsPaths } from '../src/heuristic/basic-snake'
+import { basicSnake, bfsPathsToFood } from '../src/heuristic/basic-snake'
 import { merge } from "lodash";
+import { World } from "../src/heuristic/prelude";
+import { log } from "../src/log";
 
 type Config = {
     [key in keyof GameState]?: Partial<GameState[key]>;
@@ -94,8 +96,23 @@ describe("Battlesnake Food Search", () => {
         const gameState = createGameState(me, {
             board: { width: 5, height: 5, food: [food] },
         });
-        const paths = bfsPaths(gameState);
+        const w = World.fromGameState(gameState);
+        log.debug('\n' + w.toString())
+        const paths = bfsPathsToFood(w, gameState);
         expect(paths.length).toBe(1);
+        expect(paths).toEqual([[{ "x": 0, "y": 0 },
+        { "x": 1, "y": 0 },
+        { "x": 2, "y": 0 },
+        { "x": 3, "y": 0 },
+        { "x": 4, "y": 0 },
+        { "x": 4, "y": 1 },
+        { "x": 4, "y": 2 },
+        { "x": 4, "y": 3 },
+        { "x": 3, "y": 3 },
+        { "x": 2, "y": 3 },
+        { "x": 1, "y": 3 },
+        { "x": 0, "y": 3 },
+        { "x": 0, "y": 4 }]]);
         expect(paths[0]).not.toContain(me.body);
     });
 });
