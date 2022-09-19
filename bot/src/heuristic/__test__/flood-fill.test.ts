@@ -1,10 +1,10 @@
 import { calcFill } from "../flood-fill"
-import { World } from "../prelude"
+import { GameContext } from "../prelude/prelude"
 
 describe('flood fill', () => {
     test('calc_fill fills empty', () => {
         // GIVEN
-        const world = new World(10, 10)
+        const world = new GameContext(10, 10)
 
         // WHEN
         const count = calcFill(world, {x: 0, y: 0});
@@ -17,7 +17,7 @@ describe('flood fill', () => {
                   'DDSS'+
                   'SSSD'+
                   'SSDD';
-        const world = World.fromString(4, 4, m)
+        const world = GameContext.fromString(4, 4, m)
         const seen = new Set<number>();
         // Keep in mind the fill string is upside down when fed in
         expect(calcFill(world, {x: 0, y: 0}).size).toBe(1)

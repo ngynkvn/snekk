@@ -1,4 +1,4 @@
-import { coord, World } from "../prelude";
+import { coord, GameContext } from "../prelude/prelude";
 import { t } from "./test.util";
 
 describe('prelude', () => {
@@ -8,7 +8,7 @@ describe('prelude', () => {
         const [width, height] = [10, 10];
 
         // WHEN
-        const map = new World(width, height)
+        const map = new GameContext(width, height)
         const i = map.i.bind(map)
         const c = map.c.bind(map)
 
@@ -25,7 +25,7 @@ describe('prelude', () => {
     })
 
     test('toString', () => {
-        const map = new World(3, 1);
+        const map = new GameContext(3, 1);
         map.mark('1')({ x: 0, y: 0 })
         expect(map.toString()).toBe(`1SS`)
         map.mark('1')({ x: 1, y: 0 })
@@ -34,7 +34,7 @@ describe('prelude', () => {
         expect(map.toString()).toBe(`111`)
     })
     test('toString2', () => {
-        const map = new World(3, 3);
+        const map = new GameContext(3, 3);
         // Trimming function
         const t = (s: string) => s.split('\n').map(s => s.trim()).filter(Boolean).join('\n')
         map.mark('1')({ x: 0, y: 0 })
@@ -51,7 +51,7 @@ describe('prelude', () => {
                                        1SS`))
     })
     test('toString2', () => {
-        const map = new World(3, 3);
+        const map = new GameContext(3, 3);
         // Trimming function
         const cfg = { snakes: ["🐍"], hazard: "0", safe: "🔵" };
 
