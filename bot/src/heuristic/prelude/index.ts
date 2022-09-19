@@ -1,13 +1,15 @@
-import { Coord, GameState } from "../bs-types";
+import { Coord, GameState } from "../../bs-types";
 import * as R from 'ramda';
+import { Decision } from "../basic-snake";
+import { coord } from "./coord";
+export { coord };
 
-export type Decision = 'up' | 'down' | 'left' | 'right';
 export type Point = [number, number];
+export type Player = string;
 export type Safe = 'S';
 export type Death = 'D';
 export type Food = 'F';
 export type Outside = 'O';
-export type Player = string;
 export type CellType = Safe | Death | Player | Outside | Food;
 export type Map = CellType[];
 
@@ -17,8 +19,7 @@ export type IconSet = {
     hazard: string
 }
 
-// TODO: Probably a better name than 'World'
-export class World {
+export class GameContext {
     map: Array<CellType>;
     // Dimensions
     width: number
@@ -38,8 +39,8 @@ export class World {
         this.raw = raw
     }
 
-    static fromString(width: number, height: number, str: string): World {
-        const w = new World(width, height);
+    static fromString(width: number, height: number, str: string): GameContext {
+        const w = new GameContext(width, height);
         const arr = str.split('');
         if (arr.length !== w.map.length) {
             throw 'String length mismatched'
@@ -48,8 +49,8 @@ export class World {
         return w
     }
 
-    static fromGameState(gameState: GameState): World {
-        const w = new World(gameState.board.width, gameState.board.height, gameState)
+    static fromGameState(gameState: GameState): GameContext {
+        const w = new GameContext(gameState.board.width, gameState.board.height, gameState)
         gameState.board.food.forEach(w.mark('F').bind(w))
         gameState.board.snakes.forEach(s => s.body.forEach(w.mark(s.id)))
         return w
@@ -57,9 +58,9 @@ export class World {
 
     static DEFAULT_SNAKE_ICONS = ["🥸", "🎃", "👽", "🌕", "🌑", "🍪"];
 
-    static DEFAULT_ENV_ICONS: IconSet = { snakes: World.DEFAULT_SNAKE_ICONS, hazard: "🟥", safe: "⬜️" };
+    static DEFAULT_ENV_ICONS: IconSet = { snakes: GameContext.DEFAULT_SNAKE_ICONS, hazard: "🟥", safe: "⬜️" };
 
-    toEmojiString({ snakes, hazard, safe } = World.DEFAULT_ENV_ICONS): string {
+    toEmojiString({ snakes, hazard, safe } = GameContext.DEFAULT_ENV_ICONS): string {
         const snakeMap: Record<string, string> = {};
         let i = 0;
         return this.map.reduce((prev: string[][], curr) => {
@@ -132,54 +133,4 @@ export class World {
     spanOut(c: Coord): (Coord & { direction: Decision })[] {
         return coord.Sprawl(c).filter(this.isSafe.bind(this))
     };
-}
-
-type CoordFn = {
-    Origin: Coord,
-    Equals: (a: Coord, b: Coord) => boolean;
-    // Manhattan distance
-    Distance: (a: Coord, b: Coord) => number,
-    Includes: (a: Coord, cs: Coord[]) => boolean;
-    /**
-     * Returns possible new coordinates assuming the given direction is taken.
-     * @param a Coord
-     * @returns 
-     */
-    Sprawl: (a: Coord) => (Coord & { direction: Decision })[];
-    Towards: (to: Coord, from: Coord) => Coord;
-    // Length(to) == Distance(to, origin)
-    Length: (to: Coord) => number;
-    toString: (c: Coord) => string;
-    from: (x: number, y: number) => Coord;
-
-}
-
-export const coord: CoordFn = {
-    Origin: { x: 0, y: 0 },
-    Equals: (a, b) => a.x == b.x && a.y == b.y,
-    // Manhattan distance
-    Distance: (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y),
-    Includes: (a, cs) => cs.some(R.partial(coord.Equals, [a])),
-    /**
-     * Returns possible new coordinates assuming the given direction is taken.
-     * @param a Coord
-     * @returns 
-     */
-    Sprawl: (a) => ([
-        { x: a.x + 1, y: a.y, direction: 'right' },
-        { x: a.x - 1, y: a.y, direction: 'left' },
-        { y: a.y + 1, x: a.x, direction: 'up' },
-        { y: a.y - 1, x: a.x, direction: 'down' },
-    ]),
-    Towards: (to, from) => {
-        return { x: to.x - from.x, y: to.y - from.y, }
-    },
-    // Length(a) == Distance(a, Origin) == Distance(Origin, a)
-    Length: (to) => {
-        return Math.abs(to.x) + Math.abs(to.y)
-    },
-    toString: ({ x, y }) => {
-        return `(${x}, ${y})`;
-    },
-    from: (x, y) => ({ x, y })
 }

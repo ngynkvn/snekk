@@ -1,7 +1,7 @@
 import { GameState, Coord, Battlesnake, InfoResponse, MoveResponse } from "../bs-types";
 import { log } from "../log";
 import { BotAPI } from "../logic";
-import { Decision, CellType, World } from "./prelude";
+import { Decision, CellType, GameContext } from "./prelude/prelude";
 
 /**
  * 
@@ -12,7 +12,7 @@ export function floodFill(gameState: GameState): { move: string } {
     // Inputs from GameState
     const { you, board: { snakes, hazards } } = gameState;
     const { width, height } = gameState.board;
-    const map = new World(width, height);
+    const map = new GameContext(width, height);
 
     // Mark deadly locations
     [...you.body, ...snakes.flatMap(s => s.body), ...hazards].forEach(map.mark('D'))
@@ -41,7 +41,7 @@ export function floodFill(gameState: GameState): { move: string } {
     return {move: decision} ;
 }
 
-export function calcFill(map: World, move: Coord, visitedTiles: Set<number> = new Set()): Set<number> {
+export function calcFill(map: GameContext, move: Coord, visitedTiles: Set<number> = new Set()): Set<number> {
     if (visitedTiles.has(map.i(move))) {
         return visitedTiles;
     }
