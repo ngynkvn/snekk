@@ -1,6 +1,6 @@
 // See https://docs.battlesnake.com/references/api for all details and examples.
 
-export interface InfoResponse {
+export type InfoResponse = {
     apiversion: string;
     author?: string;
     color?: string;
@@ -9,23 +9,23 @@ export interface InfoResponse {
     version?: string;
 }
 
-export interface MoveResponse {
+export type MoveResponse = {
     move: string;
     shout?: string;
 }
 
-export interface RoyaleSettings {
+export type RoyaleSettings = {
     shrinkEveryNTurns: number;
 }
 
-export interface SquadSettings {
+export type SquadSettings = {
     allowBodyCollisions: boolean;
     sharedElimination: boolean;
     sharedHealth: boolean;
     sharedLength: boolean;
 }
 
-export interface RulesetSettings {
+export type RulesetSettings = {
     foodSpawnChance: number;
     minimumFood: number;
     hazardDamagePerTurn: number;
@@ -33,25 +33,25 @@ export interface RulesetSettings {
     squad: SquadSettings;
 }
 
-export interface Ruleset {
+export type Ruleset = {
     name: string;
     version: string;
     settings: RulesetSettings;
 }
 
-export interface Game {
+export type Game = {
     id: string;
     ruleset: Ruleset;
     timeout: number;
     source: string;
 }
 
-export interface Coord {
+export type Coord = {
     x: number;
     y: number;
 }
 
-export interface Battlesnake {
+export type Battlesnake = {
     id: string;
     name: string;
     health: number;
@@ -65,7 +65,7 @@ export interface Battlesnake {
     squad: string;
 }
 
-export interface Board {
+export type Board = {
     height: number;
     width: number;
     food: Coord[];
@@ -75,7 +75,7 @@ export interface Board {
     hazards: Coord[];
 }
 
-export interface GameState {
+export type GameState = {
     game: Game;
     turn: number;
     board: Board;

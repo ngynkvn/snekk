@@ -168,6 +168,7 @@ function end(gameState: GameState): void { }
 
 export default function api(): BotAPI {
     return {
+        name: 'basic-snake',
         info,
         start,
         end,

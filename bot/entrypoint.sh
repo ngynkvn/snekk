@@ -1,6 +1,5 @@
 #!/bin/bash
 set -euxo pipefail
-for sql in sql/*.table.*sql; do
-    sqlite3 /db/bot.db < $sql
-done;
+
+nohup redis-server --loadmodule /modules/rejson.so &
 npm run dev

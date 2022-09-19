@@ -25,3 +25,5 @@ README.md
 # 
 **/*.log
 fly.toml
+build
+*.rdb

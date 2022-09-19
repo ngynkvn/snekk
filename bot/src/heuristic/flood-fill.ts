@@ -67,6 +67,7 @@ function end(gameState: GameState): void {}
 
 export default function api(): BotAPI {
     return {
+        name: 'floodr',
         info,
         start,
         end,

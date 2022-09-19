@@ -3,10 +3,16 @@ services:
     build:
       context: ./bot
       target: development
+    port: 6379:6379
     volumes:
       - ./bot:/kevin/bot
       - ./db:/db
       - ./log/bot:/log
+  redis:
+    build:
+      context: ./bot
+      target: redisJSON
+    entrypoint: sleep 100000000
   rules:
     build:
       context: .
