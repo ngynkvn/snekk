@@ -1,7 +1,7 @@
 import { Coord, GameState } from "../../bs-types";
 import { log } from "../../log";
 import { basicSnake, getDirTo } from "../basic-snake";
-import { World } from "../prelude";
+import { Environment } from "../prelude";
 
 describe('getDirTo', () => {
     it('returns the dirs I expect', () => {
@@ -35,11 +35,11 @@ describe('getDirTo', () => {
             },
             turn: {}
         } as GameState;
-        const w = World.fromGameState(gameState)
-        log.info('\n'+w.toString())
-        log.info(w.i({x: 4, y: 0}))
+        const w = Environment.fromGameState(gameState)
+        log.info('\n' + w.toString())
+        log.info(w.i({ x: 4, y: 0 }))
         const span = w.spanOut(homie.head)
-        expect(span).toEqual([{x: 5, y: 0, direction:'down'}])
+        expect(span).toEqual([{ x: 5, y: 0, direction: 'down' }])
         expect(basicSnake(gameState).move).toBe('down')
     })
 })

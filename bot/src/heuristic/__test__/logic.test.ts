@@ -2,7 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 import { Battlesnake, Coord, GameState, MoveResponse } from "../../bs-types";
 import { basicSnake, bfsPathsToFood } from '../basic-snake'
 import { merge } from "lodash";
-import { World } from "../prelude";
+import { Environment } from "../prelude";
 import { log } from "../../log";
 
 type Config = {
@@ -96,7 +96,7 @@ describe("Battlesnake Food Search", () => {
         const gameState = createGameState(me, {
             board: { width: 5, height: 5, food: [food] },
         });
-        const w = World.fromGameState(gameState);
+        const w = Environment.fromGameState(gameState);
         log.debug('\n' + w.toString())
         const paths = bfsPathsToFood(w, gameState);
         expect(paths.length).toBe(1);

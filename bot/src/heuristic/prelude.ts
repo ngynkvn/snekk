@@ -17,8 +17,7 @@ export type IconSet = {
     hazard: string
 }
 
-// TODO: Probably a better name than 'World'
-export class World {
+export class Environment {
     map: Array<CellType>;
     // Dimensions
     width: number
@@ -38,8 +37,8 @@ export class World {
         this.raw = raw
     }
 
-    static fromString(width: number, height: number, str: string): World {
-        const w = new World(width, height);
+    static fromString(width: number, height: number, str: string): Environment {
+        const w = new Environment(width, height);
         const arr = str.split('');
         if (arr.length !== w.map.length) {
             throw 'String length mismatched'
@@ -48,8 +47,8 @@ export class World {
         return w
     }
 
-    static fromGameState(gameState: GameState): World {
-        const w = new World(gameState.board.width, gameState.board.height, gameState)
+    static fromGameState(gameState: GameState): Environment {
+        const w = new Environment(gameState.board.width, gameState.board.height, gameState)
         gameState.board.food.forEach(w.mark('F').bind(w))
         gameState.board.snakes.forEach(s => s.body.forEach(w.mark(s.id)))
         return w
@@ -57,9 +56,9 @@ export class World {
 
     static DEFAULT_SNAKE_ICONS = ["🥸", "🎃", "👽", "🌕", "🌑", "🍪"];
 
-    static DEFAULT_ENV_ICONS: IconSet = { snakes: World.DEFAULT_SNAKE_ICONS, hazard: "🟥", safe: "⬜️" };
+    static DEFAULT_ENV_ICONS: IconSet = { snakes: Environment.DEFAULT_SNAKE_ICONS, hazard: "🟥", safe: "⬜️" };
 
-    toEmojiString({ snakes, hazard, safe } = World.DEFAULT_ENV_ICONS): string {
+    toEmojiString({ snakes, hazard, safe } = Environment.DEFAULT_ENV_ICONS): string {
         const snakeMap: Record<string, string> = {};
         let i = 0;
         return this.map.reduce((prev: string[][], curr) => {

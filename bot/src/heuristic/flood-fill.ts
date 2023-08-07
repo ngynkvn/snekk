@@ -1,7 +1,7 @@
 import { GameState, Coord, Battlesnake, InfoResponse, MoveResponse } from "../bs-types";
 import { log } from "../log";
 import { BotAPI } from "../logic";
-import { Decision, CellType, World } from "./prelude";
+import { Decision, CellType, Environment } from "./prelude";
 
 /**
  * 
@@ -12,7 +12,7 @@ export function floodFill(gameState: GameState): { move: string } {
     // Inputs from GameState
     const { you, board: { snakes, hazards } } = gameState;
     const { width, height } = gameState.board;
-    const map = new World(width, height);
+    const map = new Environment(width, height);
 
     // Mark deadly locations
     [...you.body, ...snakes.flatMap(s => s.body), ...hazards].forEach(map.mark('D'))
@@ -38,10 +38,10 @@ export function floodFill(gameState: GameState): { move: string } {
         log.fatal(new Error('Decision could not be made!:\n' + map.toString() + `\n${gameState}`))
     }
 
-    return {move: decision} ;
+    return { move: decision };
 }
 
-export function calcFill(map: World, move: Coord, visitedTiles: Set<number> = new Set()): Set<number> {
+export function calcFill(map: Environment, move: Coord, visitedTiles: Set<number> = new Set()): Set<number> {
     if (visitedTiles.has(map.i(move))) {
         return visitedTiles;
     }
@@ -62,8 +62,8 @@ function info(): InfoResponse {
     };
     return response;
 }
-function start(gameState: GameState): void {}
-function end(gameState: GameState): void {}
+function start(gameState: GameState): void { }
+function end(gameState: GameState): void { }
 
 export default function api(): BotAPI {
     return {

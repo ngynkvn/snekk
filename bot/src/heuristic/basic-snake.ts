@@ -2,10 +2,10 @@ import { Coord, GameState, InfoResponse, MoveResponse } from "../bs-types";
 import * as R from 'ramda';
 import { log } from "../log";
 import { BotAPI } from "../logic";
-import { coord, World } from "./prelude";
+import { coord, Environment } from "./prelude";
 
 export function basicSnake(gameState: GameState): MoveResponse {
-    const world = World.fromGameState(gameState);
+    const world = Environment.fromGameState(gameState);
     const head = gameState.you.head;
 
     // Step 0: Don't let your Battlesnake move back on it's own neck
@@ -106,7 +106,7 @@ export const DIRECTIONS = ["up", "down", "left", "right"];
  * @param state
  * @returns Coord[][]
  */
-export function bfsPathsToFood(world: World, state: GameState): Coord[][] {
+export function bfsPathsToFood(world: Environment, state: GameState): Coord[][] {
     const start = state.you.head;
     const foods = state.board.food;
     const queue: Coord[] = [start];
