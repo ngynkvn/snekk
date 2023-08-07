@@ -3,6 +3,7 @@ import * as R from 'ramda';
 import { log } from "../log";
 import { BotAPI } from "../logic";
 import { coord, Environment } from "./prelude";
+import { Decision } from "./prelude";
 
 export function basicSnake(gameState: GameState): MoveResponse {
     const world = Environment.fromGameState(gameState);
@@ -94,7 +95,6 @@ export function getDirTo(to: Coord, from: Coord): Decision {
     }
 }
 
-export type Decision = "up" | "down" | "left" | "right";
 export const DIRECTIONS = ["up", "down", "left", "right"];
 
 /**

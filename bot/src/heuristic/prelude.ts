@@ -2,6 +2,7 @@ import { Coord, GameState } from "../bs-types";
 import * as R from 'ramda';
 
 export type Decision = 'up' | 'down' | 'left' | 'right';
+export type Direction = Decision;
 export type Point = [number, number];
 export type Safe = 'S';
 export type Death = 'D';
